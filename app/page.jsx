@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { ArrowDownRight, ArrowUpRight, BrainCircuit, Braces, Code2, Database, GraduationCap, Layers3, Menu, Moon, Server, Sun, Terminal, X } from 'lucide-react'
-import { getProjects } from '@/lib/api'
+import { getProjects } from '../lib/api'
 
 const profileLinks = [
   { name: 'HelloCV', label: 'View my profile', href: 'https://hello.cv/muhammadisahprofile', icon: 'cv' },
