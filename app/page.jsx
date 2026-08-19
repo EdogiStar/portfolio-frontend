@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { ArrowDownRight, ArrowUpRight, BrainCircuit, Braces, Code2, Database, GraduationCap, Layers3, Menu, Moon, Server, Sun, Terminal, X } from 'lucide-react'
+import { getProjects } from '@/lib/api'
 
 const profileLinks = [
   { name: 'HelloCV', label: 'View my profile', href: 'https://hello.cv/muhammadisahprofile', icon: 'cv' },
@@ -185,12 +186,144 @@ function AboutSection() {
   return <section id="about" className="about section-wrap"><div className="about-top"><SectionHeading kicker="01 — About" title="More than code.">A practical approach to software, shaped by curiosity, clarity and the people who use what I build.</SectionHeading><ScrollReveal className="about-body"><p>I&apos;m a Computer Science graduate and full-stack developer who enjoys turning ideas into useful digital products. I work across frontend, backend and AI-powered applications, with a strong focus on clean architecture and practical user experiences.</p><a className="text-link" href="#contact">More about my approach <ArrowUpRight size={16} /></a></ScrollReveal></div><ScrollReveal className="facts-grid">{facts.map(({ title, icon: Icon }, index) => <div className="fact" key={title}><span>0{index + 1}</span><div className="fact-icon" aria-hidden="true"><Icon size={24} strokeWidth={1.35} /><i /></div><strong>{title}</strong></div>)}</ScrollReveal></section>
 }
 
-function ProjectPreview({ project, index }) {
+function ProjectPreview({ project, index, total }) {
   const { ref, motion } = useProjectScrollMotion()
-  return <ScrollReveal className="project-preview"><div ref={ref} className={`project-art ${project.tone}`} style={{ '--project-scale': motion.scale, '--project-y': `${motion.y}px`, '--window-y': `${motion.innerY}px` }}><div className="art-top"><span>{project.number} / 03</span><span>Featured work</span></div><div className="art-window"><div className="window-bar"><i /><i /><i /><span>{project.title.toLowerCase().replace(' ', '')}.studio</span></div><div className="window-content"><b>{index === 0 ? 'Commerce, with' : index === 1 ? 'Care, made' : 'See the signal.'}<br /><em>more intention.</em></b><span className="art-line" /></div></div></div><div className="project-info"><div><p className="eyebrow">{project.number} — Selected project</p><h3>{project.title}</h3><p>{project.description}</p><div className="tag-list">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div><div className="project-links"><a href="#contact" aria-label={`View ${project.title} live demo`}>Live demo <ArrowUpRight size={16} /></a><a href="#contact" aria-label={`View ${project.title} on GitHub`}>GitHub <ArrowUpRight size={16} /></a></div></div></ScrollReveal>
+
+  const number = String(index + 1).padStart(2, '0')
+
+  const technologies =
+    project.project_technologies?.map(
+      (item) => item.technologies?.name
+    ).filter(Boolean) || []
+
+  const coverImage =
+    project.project_images?.find((image) => image.is_cover)?.image_url ||
+    project.project_images?.[0]?.image_url
+
+  const tone = ['ochre', 'slate', 'mint'][index % 3]
+
+  return (
+    <ScrollReveal className="project-preview">
+      <div
+        ref={ref}
+        className={`project-art ${tone}`}
+        style={{
+          '--project-scale': motion.scale,
+          '--project-y': `${motion.y}px`,
+          '--window-y': `${motion.innerY}px`,
+        }}
+      >
+        <div className="art-top">
+          <span>{number} / {String(total).padStart(2, '0')}</span>
+          <span>Featured work</span>
+        </div>
+
+        <div className="art-window">
+          <div className="window-bar">
+            <i />
+            <i />
+            <i />
+            <span>
+              {project.title.toLowerCase().replace(/\s+/g, '')}.studio
+            </span>
+          </div>
+
+          <div className="window-content">
+            {coverImage ? (
+              <img
+                src={coverImage}
+                alt={project.project_images?.find(
+                  (image) => image.is_cover
+                )?.alt_text || project.title}
+              />
+            ) : (
+              <>
+                <b>
+                  {project.title}
+                  <br />
+                  <em>more intention.</em>
+                </b>
+                <span className="art-line" />
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="project-info">
+        <div>
+          <p className="eyebrow">
+            {number} — Selected project
+          </p>
+
+          <h3>{project.title}</h3>
+
+          <p>{project.short_description}</p>
+
+          <div className="tag-list">
+            {technologies.map((technology) => (
+              <span key={technology}>
+                {technology}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="project-links">
+          {project.live_url && (
+            <a
+              href={project.live_url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Live demo <ArrowUpRight size={16} />
+            </a>
+          )}
+
+          {project.github_url && (
+            <a
+              href={project.github_url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub <ArrowUpRight size={16} />
+            </a>
+          )}
+        </div>
+      </div>
+    </ScrollReveal>
+  )
 }
 
-function ProjectsSection() { return <section id="projects" className="projects section-wrap"><SectionHeading kicker="02 — Projects" title="Selected work." >A small selection of digital products, systems and experiments built with care.</SectionHeading><div className="projects-list">{projects.map((project, index) => <ProjectPreview key={project.number} project={project} index={index} />)}</div></section> }
+function ProjectsSection({ projects, loading }) {
+  return (
+    <section id="projects" className="projects section-wrap">
+      <SectionHeading
+        kicker="02 — Projects"
+        title="Selected work."
+      >
+        A small selection of digital products, systems and experiments built with care.
+      </SectionHeading>
+
+      <div className="projects-list">
+        {loading ? (
+          <p>Loading projects...</p>
+        ) : projects.length === 0 ? (
+          <p>No projects available.</p>
+        ) : (
+          projects.map((project, index) => (
+<ProjectPreview
+  key={project.id}
+  project={project}
+  index={index}
+  total={projects.length}
+/>
+          ))
+        )}
+      </div>
+    </section>
+  )
+}
 
 function ExperienceSection() {
   const { ref, progress } = useExperienceScrollProgress()
@@ -205,6 +338,45 @@ function ExperienceSection() {
 function Footer() { return <footer id="contact" className="footer section-wrap"><div className="footer-lead"><ScrollReveal className="footer-reveal footer-eyebrow"><p className="eyebrow">04 — Contact</p></ScrollReveal><ScrollReveal className="footer-reveal footer-heading"><h2>Have a good idea?<br /><em>Let&apos;s make it real.</em></h2></ScrollReveal><ScrollReveal className="footer-reveal footer-cta"><a className="button button-primary" href="mailto:hello@mxdev.dev">Start a conversation <ArrowUpRight size={17} /></a></ScrollReveal><ScrollReveal className="footer-reveal profile-area"><p className="profile-kicker">Find me online</p><div className="profile-links">{profileLinks.map((profile) => <a className="profile-link" key={profile.name} href={profile.href} target="_blank" rel="noopener noreferrer" aria-label={`${profile.name === 'HelloCV' ? 'View my HelloCV profile' : `Visit my ${profile.name} profile`}`}><span className="profile-icon"><ProfileIcon type={profile.icon} /></span><span><strong>{profile.name}</strong><small>{profile.label}</small></span><ArrowUpRight className="profile-arrow" size={15} /></a>)}</div></ScrollReveal></div><div className="footer-bottom"><span>© 2026 MxDev / Isah Muhammad</span><div><a href="https://hello.cv/muhammadisahprofile" target="_blank" rel="noopener noreferrer">HelloCV</a><a href="https://github.com/EdogiStar" target="_blank" rel="noopener noreferrer">GitHub</a><a href="https://www.linkedin.com/in/isah-muhammad-alhaji-b86224238" target="_blank" rel="noopener noreferrer">LinkedIn</a><a href="https://x.com/MuqsitX50831" target="_blank" rel="noopener noreferrer">X</a><a href="#home">Back to top ↑</a></div></div></footer> }
 
 export default function Page() {
-  const progress = useScrollProgress(); const { theme, toggle } = useTheme()
-  return <><Navbar theme={theme} onToggle={toggle} /><main><HeroSection progress={progress} /><AboutSection /><ProjectsSection /><ExperienceSection /></main><Footer /></>
+  const progress = useScrollProgress()
+  const { theme, toggle } = useTheme()
+
+  const [projects, setProjects] = useState([])
+  const [loadingProjects, setLoadingProjects] = useState(true)
+
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const data = await getProjects()
+        setProjects(data)
+      } catch (error) {
+        console.error('Failed to load projects:', error)
+      } finally {
+        setLoadingProjects(false)
+      }
+    }
+
+    loadProjects()
+  }, [])
+
+  return (
+    <>
+      <Navbar theme={theme} onToggle={toggle} />
+
+      <main>
+        <HeroSection progress={progress} />
+
+        <AboutSection />
+
+        <ProjectsSection
+          projects={projects}
+          loading={loadingProjects}
+        />
+
+        <ExperienceSection />
+      </main>
+
+      <Footer />
+    </>
+  )
 }
