@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { ArrowDownRight, ArrowUpRight, BrainCircuit, Braces, Code2, Database, GraduationCap, Layers3, Menu, Moon, Server, Sun, Terminal, X } from 'lucide-react'
-import { getProjects } from '../lib/api'
+import { 
+    getProjects,
+    getSkills
+ } from '../lib/api'
 
 const profileLinks = [
   { name: 'HelloCV', label: 'View my profile', href: 'https://hello.cv/muhammadisahprofile', icon: 'cv' },
@@ -172,18 +175,89 @@ function HeroSection({ progress }) {
   return <section id="home" className="hero section-wrap"><div className="hero-grid"><div className="hero-copy" style={style}><p className="eyebrow"><span className="eyebrow-dot" /> Full-stack developer</p><h1>Building digital<br /><em>experiences</em><br />that solve real<br />problems.</h1><p className="hero-description">I&apos;m Isah Muhammad, a full-stack developer focused on building reliable, scalable and thoughtful web applications.</p><div className="hero-actions"><a className="button button-primary" href="#projects">View projects <ArrowDownRight size={17} /></a><a className="text-link" href="#contact">Let&apos;s talk <ArrowUpRight size={16} /></a></div></div><div className="hero-mark" aria-hidden="true" style={{ transform: `translateY(${progress * 70}px) rotate(${progress * 8}deg)`, opacity: 0.95 - progress * 0.5 }}><span>Mx</span><span>Dev</span><i /></div></div><div className="hero-meta"><span>Based in Nigeria</span><span>Available for select projects</span><span className="scroll-cue"><span /> Scroll to explore</span></div></section>
 }
 
-function AboutSection() {
-  const facts = [
+function AboutSection({ skills, loading }) {
+  const staticFacts = [
     { title: 'B.Sc. Computer Science', icon: GraduationCap },
     { title: 'Full-Stack Development', icon: Layers3 },
-    { title: 'React / JavaScript', icon: Code2 },
-    { title: 'Node.js / Express', icon: Server },
-    { title: 'PHP / Laravel', icon: Braces },
-    { title: 'PostgreSQL / Supabase', icon: Database },
-    { title: 'Python / FastAPI', icon: Terminal },
-    { title: 'AI & Machine Learning', icon: BrainCircuit },
   ]
-  return <section id="about" className="about section-wrap"><div className="about-top"><SectionHeading kicker="01 — About" title="More than code.">A practical approach to software, shaped by curiosity, clarity and the people who use what I build.</SectionHeading><ScrollReveal className="about-body"><p>I&apos;m a Computer Science graduate and full-stack developer who enjoys turning ideas into useful digital products. I work across frontend, backend and AI-powered applications, with a strong focus on clean architecture and practical user experiences.</p><a className="text-link" href="#contact">More about my approach <ArrowUpRight size={16} /></a></ScrollReveal></div><ScrollReveal className="facts-grid">{facts.map(({ title, icon: Icon }, index) => <div className="fact" key={title}><span>0{index + 1}</span><div className="fact-icon" aria-hidden="true"><Icon size={24} strokeWidth={1.35} /><i /></div><strong>{title}</strong></div>)}</ScrollReveal></section>
+
+  const iconMap = {
+    javascript: Code2,
+    react: Code2,
+    nextjs: Code2,
+    tailwindcss: Code2,
+    nodejs: Server,
+    express: Server,
+    php: Braces,
+    laravel: Braces,
+    python: Terminal,
+    fastapi: Terminal,
+    postgresql: Database,
+    supabase: Database,
+    mysql: Database,
+    mongodb: Database,
+    git: Code2,
+    github: Code2,
+    postman: Terminal,
+    'machine-learning': BrainCircuit,
+    ai: BrainCircuit,
+  }
+
+  const facts = [
+    ...staticFacts,
+    ...skills.map((skill) => ({
+      title: skill.name,
+      icon: iconMap[skill.icon] || Code2,
+    })),
+  ]
+
+  
+  return (
+    <section id="about" className="about section-wrap">
+      <div className="about-top">
+        <SectionHeading
+          kicker="01 — About"
+          title="More than code."
+        >
+          A practical approach to software, shaped by curiosity, clarity and the people who use what I build.
+        </SectionHeading>
+
+        <ScrollReveal className="about-body">
+          <p>
+            I&apos;m a Computer Science graduate and full-stack developer
+            who enjoys turning ideas into useful digital products. I work
+            across frontend, backend and AI-powered applications, with a
+            strong focus on clean architecture and practical user experiences.
+          </p>
+
+          <a className="text-link" href="#contact">
+            More about my approach <ArrowUpRight size={16} />
+          </a>
+        </ScrollReveal>
+      </div>
+
+      <ScrollReveal className="facts-grid">
+        {loading ? (
+          <p>Loading skills...</p>
+        ) : (
+          facts.map(({ title, icon: Icon }, index) => (
+            <div className="fact" key={title}>
+              <span>
+                {String(index + 1).padStart(2, '0')}
+              </span>
+
+              <div className="fact-icon" aria-hidden="true">
+                <Icon size={24} strokeWidth={1.35} />
+                <i />
+              </div>
+
+              <strong>{title}</strong>
+            </div>
+          ))
+        )}
+      </ScrollReveal>
+    </section>
+  )
 }
 
 function ProjectPreview({ project, index, total }) {
@@ -342,22 +416,38 @@ export default function Page() {
   const { theme, toggle } = useTheme()
 
   const [projects, setProjects] = useState([])
-  const [loadingProjects, setLoadingProjects] = useState(true)
+const [loadingProjects, setLoadingProjects] = useState(true)
+
+const [skills, setSkills] = useState([])
+const [loadingSkills, setLoadingSkills] = useState(true)
 
   useEffect(() => {
-    const loadProjects = async () => {
-      try {
-        const data = await getProjects()
-        setProjects(data)
-      } catch (error) {
-        console.error('Failed to load projects:', error)
-      } finally {
-        setLoadingProjects(false)
-      }
+  const loadProjects = async () => {
+    try {
+      const data = await getProjects()
+      setProjects(data)
+    } catch (error) {
+      console.error('Failed to load projects:', error)
+    } finally {
+      setLoadingProjects(false)
     }
+  }
 
-    loadProjects()
-  }, [])
+  const loadSkills = async () => {
+    try {
+      const data = await getSkills()
+      setSkills(data)
+    } catch (error) {
+      console.error('Failed to load skills:', error)
+    } finally {
+      setLoadingSkills(false)
+    }
+  }
+
+  loadProjects()
+  loadSkills()
+}, [])
+
 
   return (
     <>
@@ -366,7 +456,10 @@ export default function Page() {
       <main>
         <HeroSection progress={progress} />
 
-        <AboutSection />
+        <AboutSection
+  skills={skills}
+  loading={loadingSkills}
+/>
 
         <ProjectsSection
           projects={projects}
