@@ -3,24 +3,13 @@ import './globals.css'
 
 export const metadata = {
   title: 'MxDev — Isah Muhammad | Full-Stack Developer',
-  description: 'The portfolio of Isah Muhammad, a Nigerian full-stack developer building reliable, scalable and thoughtful digital experiences.',
+  description:
+    'The portfolio of Isah Muhammad, a Nigerian full-stack developer building reliable, scalable and thoughtful digital experiences.',
   generator: 'MxDev',
+
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/logo.png',
+    apple: '/logo.png',
   },
 }
 
