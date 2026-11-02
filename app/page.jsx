@@ -175,7 +175,7 @@ function HeroSection({ progress }) {
   return <section id="home" className="hero section-wrap"><div className="hero-grid"><div className="hero-copy" style={style}><p className="eyebrow"><span className="eyebrow-dot" /> Full-stack developer</p><h1>Building digital<br /><em>experiences</em><br />that solve real<br />problems.</h1><p className="hero-description">I&apos;m Isah Muhammad, a full-stack developer focused on building reliable, scalable and thoughtful web applications.</p><div className="hero-actions"><a className="button button-primary" href="#projects">View projects <ArrowDownRight size={17} /></a><a className="text-link" href="#contact">Let&apos;s talk <ArrowUpRight size={16} /></a></div></div><div className="hero-mark" aria-hidden="true" style={{ transform: `translateY(${progress * 70}px) rotate(${progress * 8}deg)`, opacity: 0.95 - progress * 0.5 }}><span>Mx</span><span>Dev</span><i /></div></div><div className="hero-meta"><span>Based in Nigeria</span><span>Available for select projects</span><span className="scroll-cue"><span /> Scroll to explore</span></div></section>
 }
 
-function AboutSection({ skills, loading }) {
+function AboutSection({ skills, loading, error }) {
   const staticFacts = [
     { title: 'B.Sc. Computer Science', icon: GraduationCap },
     { title: 'Full-Stack Development', icon: Layers3 },
@@ -239,6 +239,8 @@ function AboutSection({ skills, loading }) {
       <ScrollReveal className="facts-grid">
         {loading ? (
           <p>Loading skills...</p>
+        ) : error ? (
+          <p className="api-error" role="status">{error}</p>
         ) : (
           facts.map(({ title, icon: Icon }, index) => (
             <div className="fact" key={title}>
@@ -369,7 +371,7 @@ function ProjectPreview({ project, index, total }) {
   )
 }
 
-function ProjectsSection({ projects, loading }) {
+function ProjectsSection({ projects, loading, error }) {
   return (
     <section id="projects" className="projects section-wrap">
       <SectionHeading
@@ -382,6 +384,8 @@ function ProjectsSection({ projects, loading }) {
       <div className="projects-list">
         {loading ? (
           <p>Loading projects...</p>
+        ) : error ? (
+          <p className="api-error" role="status">{error}</p>
         ) : projects.length === 0 ? (
           <p>No projects available.</p>
         ) : (
@@ -417,9 +421,11 @@ export default function Page() {
 
   const [projects, setProjects] = useState([])
 const [loadingProjects, setLoadingProjects] = useState(true)
+const [projectsError, setProjectsError] = useState('')
 
 const [skills, setSkills] = useState([])
 const [loadingSkills, setLoadingSkills] = useState(true)
+const [skillsError, setSkillsError] = useState('')
 
   useEffect(() => {
   const loadProjects = async () => {
@@ -428,6 +434,7 @@ const [loadingSkills, setLoadingSkills] = useState(true)
       setProjects(data)
     } catch (error) {
       console.error('Failed to load projects:', error)
+      setProjectsError(error.message || 'Projects could not be loaded.')
     } finally {
       setLoadingProjects(false)
     }
@@ -439,6 +446,7 @@ const [loadingSkills, setLoadingSkills] = useState(true)
       setSkills(data)
     } catch (error) {
       console.error('Failed to load skills:', error)
+      setSkillsError(error.message || 'Skills could not be loaded.')
     } finally {
       setLoadingSkills(false)
     }
@@ -459,11 +467,13 @@ const [loadingSkills, setLoadingSkills] = useState(true)
         <AboutSection
   skills={skills}
   loading={loadingSkills}
+  error={skillsError}
 />
 
         <ProjectsSection
           projects={projects}
           loading={loadingProjects}
+          error={projectsError}
         />
 
         <ExperienceSection />
